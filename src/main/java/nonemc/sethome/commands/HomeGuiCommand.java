@@ -34,13 +34,31 @@ public class HomeGuiCommand implements CommandExecutor {
     }
 
     public void openHomeGui(Player player) {
-        Inventory gui = Bukkit.createInventory(null, 9, ChatColor.BLUE + "GUI SetHome");
+        Inventory gui = Bukkit.createInventory(null, 36, ChatColor.BLUE + "GUI SetHome");
+        ItemStack filler = createFillerItem();
 
+        for (int i = 0; i < gui.getSize(); i++) {
+            gui.setItem(i, filler);
+        }
+
+        int homeStart = 11; // row 2, centered 5 items
+        int deleteStart = 20; // row 3, centered 5 items
         for (int slot = 0; slot < 5; slot++) {
-            gui.setItem(slot, createBedItem(player, slot));
+            gui.setItem(homeStart + slot, createBedItem(player, slot));
+            gui.setItem(deleteStart + slot, createDeleteItem(player, slot));
         }
 
         player.openInventory(gui);
+    }
+
+    private ItemStack createFillerItem() {
+        ItemStack filler = new ItemStack(Material.LIGHT_GRAY_STAINED_GLASS_PANE);
+        ItemMeta meta = filler.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(" ");
+            filler.setItemMeta(meta);
+        }
+        return filler;
     }
 
     private ItemStack createBedItem(Player player, int slot) {
@@ -54,11 +72,28 @@ public class HomeGuiCommand implements CommandExecutor {
             List<String> lore = new ArrayList<>();
             if (saved) {
                 lore.add(ChatColor.AQUA + "Đã lưu sethome.");
-                lore.add(ChatColor.GRAY + "Nhấp để xóa home này.");
+                lore.add(ChatColor.YELLOW + "Nhấp để dịch chuyển tới home này.");
             } else {
                 lore.add(ChatColor.GRAY + "Chưa lưu home.");
                 lore.add(ChatColor.YELLOW + "Nhấp để lưu vị trí hiện tại.");
             }
+            meta.setLore(lore);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    private ItemStack createDeleteItem(Player player, int slot) {
+        if (!plugin.getHomeManager().hasHome(player, slot)) {
+            return createFillerItem();
+        }
+
+        ItemStack item = new ItemStack(Material.BARRIER);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.RED + "Xóa Home " + (slot + 1));
+            List<String> lore = new ArrayList<>();
+            lore.add(ChatColor.GRAY + "Nhấp để xóa home đã lưu.");
             meta.setLore(lore);
             item.setItemMeta(meta);
         }

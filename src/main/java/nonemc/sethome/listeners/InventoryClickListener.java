@@ -37,37 +37,36 @@ public class InventoryClickListener implements Listener {
             return;
         }
 
-        ItemMeta meta = clicked.getItemMeta();
-        if (meta == null || !meta.hasDisplayName()) {
-            return;
-        }
-
-        String displayName = ChatColor.stripColor(meta.getDisplayName());
-        if (!displayName.startsWith("Giường ")) {
-            return;
-        }
-
+        int rawSlot = event.getRawSlot();
+        int homeStart = 11;
+        int deleteStart = 20;
         int slotIndex;
-        try {
-            slotIndex = Integer.parseInt(displayName.substring(7)) - 1;
-        } catch (NumberFormatException e) {
-            return;
-        }
 
-        if (slotIndex < 0 || slotIndex >= 5) {
-            return;
-        }
-
-        if (plugin.getHomeManager().hasHome(player, slotIndex)) {
-            plugin.getHomeManager().removeHome(player, slotIndex);
-            player.sendMessage(ChatColor.RED + "Đã xóa sethome " + (slotIndex + 1));
+        if (rawSlot >= homeStart && rawSlot < homeStart + 5) {
+            slotIndex = rawSlot - homeStart;
+            if (plugin.getHomeManager().hasHome(player, slotIndex)) {
+                Location homeLocation = plugin.getHomeManager().getHome(player, slotIndex);
+                if (homeLocation != null) {
+                    player.teleport(homeLocation);
+                    player.sendMessage(ChatColor.GREEN + "Đã dịch chuyển đến home " + (slotIndex + 1));
+                }
+            } else {
+                Location location = player.getLocation();
+                plugin.getHomeManager().setHome(player, slotIndex, location);
+                plugin.getHomeManager().saveHomes();
+                player.sendMessage(ChatColor.GREEN + "Đã lưu sethome " + (slotIndex + 1));
+            }
+        } else if (rawSlot >= deleteStart && rawSlot < deleteStart + 5) {
+            slotIndex = rawSlot - deleteStart;
+            if (plugin.getHomeManager().hasHome(player, slotIndex)) {
+                plugin.getHomeManager().removeHome(player, slotIndex);
+                plugin.getHomeManager().saveHomes();
+                player.sendMessage(ChatColor.RED + "Đã xóa sethome " + (slotIndex + 1));
+            }
         } else {
-            Location location = player.getLocation();
-            plugin.getHomeManager().setHome(player, slotIndex, location);
-            player.sendMessage(ChatColor.GREEN + "Đã lưu sethome " + (slotIndex + 1));
+            return;
         }
 
-        plugin.getHomeManager().saveHomes();
         new HomeGuiCommand(plugin).openHomeGui(player);
     }
 }
