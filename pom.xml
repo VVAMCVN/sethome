@@ -7,8 +7,8 @@
     <name>SetHome</name>
     <description>Spigot plugin for a 5-home GUI with blue/white bed state and delete-by-click behavior.</description>
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spigot.api.version>1.20.4-R0.1-SNAPSHOT</spigot.api.version>
     </properties>
