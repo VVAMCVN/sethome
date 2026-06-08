@@ -12,10 +12,14 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class HomeGuiCommand implements CommandExecutor {
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault());
     private final SetHomePlugin plugin;
 
     public HomeGuiCommand(SetHomePlugin plugin) {
@@ -35,43 +39,32 @@ public class HomeGuiCommand implements CommandExecutor {
 
     public void openHomeGui(Player player) {
         Inventory gui = Bukkit.createInventory(null, 36, ChatColor.BLUE + "GUI SetHome");
-        ItemStack filler = createFillerItem();
-
-        for (int i = 0; i < gui.getSize(); i++) {
-            gui.setItem(i, filler);
-        }
-
         int homeStart = 11; // row 2, centered 5 items
         int deleteStart = 20; // row 3, centered 5 items
         for (int slot = 0; slot < 5; slot++) {
             gui.setItem(homeStart + slot, createBedItem(player, slot));
-            gui.setItem(deleteStart + slot, createDeleteItem(player, slot));
+            ItemStack deleteItem = createDeleteItem(player, slot);
+            if (deleteItem != null) {
+                gui.setItem(deleteStart + slot, deleteItem);
+            }
         }
 
         player.openInventory(gui);
     }
 
-    private ItemStack createFillerItem() {
-        ItemStack filler = new ItemStack(Material.LIGHT_GRAY_STAINED_GLASS_PANE);
-        ItemMeta meta = filler.getItemMeta();
-        if (meta != null) {
-            meta.setDisplayName(" ");
-            filler.setItemMeta(meta);
-        }
-        return filler;
-    }
-
     private ItemStack createBedItem(Player player, int slot) {
         boolean saved = plugin.getHomeManager().hasHome(player, slot);
-        Material material = saved ? Material.LIME_BED : Material.WHITE_BED;
-        String displayName = (saved ? ChatColor.GREEN : ChatColor.WHITE) + "Giường " + (slot + 1);
+        Material material = saved ? Material.BLUE_BED : Material.WHITE_BED;
+        String displayName = saved ? ChatColor.BLUE + "Giường " + (slot + 1) : ChatColor.WHITE + "Giường " + (slot + 1);
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             meta.setDisplayName(displayName);
             List<String> lore = new ArrayList<>();
             if (saved) {
-                lore.add(ChatColor.AQUA + "Đã lưu sethome.");
+                lore.add(ChatColor.AQUA + "SetHome " + (slot + 1));
+                lore.add(ChatColor.GRAY + "Toạ độ: " + getCoordinateText(player, slot));
+                lore.add(ChatColor.GRAY + "Lưu: " + getFormattedDate(player, slot));
                 lore.add(ChatColor.YELLOW + "Nhấp để dịch chuyển tới home này.");
             } else {
                 lore.add(ChatColor.GRAY + "Chưa lưu home.");
@@ -83,12 +76,25 @@ public class HomeGuiCommand implements CommandExecutor {
         return item;
     }
 
+    private String getCoordinateText(Player player, int slot) {
+        var home = plugin.getHomeManager().getHome(player, slot);
+        if (home == null) {
+            return "-";
+        }
+        return home.getBlockX() + ", " + home.getBlockY() + ", " + home.getBlockZ();
+    }
+
+    private String getFormattedDate(Player player, int slot) {
+        long timestamp = plugin.getHomeManager().getHomeTimestamp(player, slot);
+        return timestamp <= 0 ? "-" : DATE_FORMATTER.format(Instant.ofEpochMilli(timestamp));
+    }
+
     private ItemStack createDeleteItem(Player player, int slot) {
         if (!plugin.getHomeManager().hasHome(player, slot)) {
-            return createFillerItem();
+            return null;
         }
 
-        ItemStack item = new ItemStack(Material.BARRIER);
+        ItemStack item = new ItemStack(Material.RED_BED);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             meta.setDisplayName(ChatColor.RED + "Xóa Home " + (slot + 1));
