@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HomeGuiCommand implements CommandExecutor {
+    public static final String INVENTORY_TITLE = ChatColor.BLUE + "GUI sethome";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault());
     private final SetHomePlugin plugin;
 
@@ -38,7 +39,7 @@ public class HomeGuiCommand implements CommandExecutor {
     }
 
     public void openHomeGui(Player player) {
-        Inventory gui = Bukkit.createInventory(null, 36, ChatColor.BLUE + "GUI sethome");
+        Inventory gui = Bukkit.createInventory(null, 36, INVENTORY_TITLE);
         int homeStart = 11; // row 2, centered 5 items
         int deleteStart = 20; // row 3, centered 5 items
         for (int slot = 0; slot < 5; slot++) {

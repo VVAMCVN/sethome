@@ -36,7 +36,11 @@ public class InventoryClickListener implements Listener {
             return;
         }
 
-        if (!event.getView().getTitle().equals(ChatColor.BLUE + "GUI SetHome")) {
+        if (!ChatColor.stripColor(event.getView().getTitle()).equals(ChatColor.stripColor(HomeGuiCommand.INVENTORY_TITLE))) {
+            return;
+        }
+
+        if (event.getClickedInventory() == null || !event.getClickedInventory().equals(event.getView().getTopInventory())) {
             return;
         }
 
@@ -98,7 +102,6 @@ public class InventoryClickListener implements Listener {
                             remaining--;
                         }
                     }, 0L, 20L).getTaskId();
-                    activeCountdownTask.put(player.getUniqueId(), countdownTaskId);
                     activeTeleportTask.put(player.getUniqueId(), countdownTaskId);
                 }
             } else {
@@ -126,7 +129,6 @@ public class InventoryClickListener implements Listener {
         if (taskId != null) {
             plugin.getServer().getScheduler().cancelTask(taskId);
         }
-        activeCountdownTask.remove(playerUuid);
     }
 
     private String formatActionBar(int totalSeconds, int remainingSeconds) {

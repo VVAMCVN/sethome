@@ -1,2 +1,6 @@
 # SetHome configuration file
-# This file is intentionally left empty for now.
+teleport-delay-seconds: 3
+show-action-bar: true
+teleport-action-bar-format: '&eDịch chuyển về sethome {seconds} giây...'
+cancel-teleport-on-damage: true
+show-details-by-default: true
