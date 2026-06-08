@@ -38,7 +38,7 @@ public class HomeGuiCommand implements CommandExecutor {
     }
 
     public void openHomeGui(Player player) {
-        Inventory gui = Bukkit.createInventory(null, 36, ChatColor.BLUE + "GUI SetHome");
+        Inventory gui = Bukkit.createInventory(null, 36, ChatColor.BLUE + "GUI sethome");
         int homeStart = 11; // row 2, centered 5 items
         int deleteStart = 20; // row 3, centered 5 items
         for (int slot = 0; slot < 5; slot++) {
@@ -48,23 +48,47 @@ public class HomeGuiCommand implements CommandExecutor {
                 gui.setItem(deleteStart + slot, deleteItem);
             }
         }
+        gui.setItem(35, createSettingsItem(player));
 
         player.openInventory(gui);
     }
 
+    private ItemStack createSettingsItem(Player player) {
+        boolean showDetails = plugin.getShowDetails(player.getUniqueId());
+        ItemStack item = new ItemStack(Material.CLOCK);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GOLD + "Cài đặt sethome");
+            List<String> lore = new ArrayList<>();
+            lore.add(ChatColor.GRAY + (showDetails ? "Đang hiển thị chi tiết home" : "Đang ẩn chi tiết home"));
+            lore.add(ChatColor.GRAY + "Click để thay đổi cách hiển thị.");
+            lore.add(ChatColor.AQUA + "Delay dịch chuyển: " + plugin.getTeleportDelaySeconds() + " giây");
+            lore.add(ChatColor.AQUA + "ActionBar: " + (plugin.isShowTeleportActionBar() ? "Bật" : "Tắt"));
+            lore.add(ChatColor.GRAY + "Cấu hình action bar trong config.yml.");
+            meta.setLore(lore);
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
     private ItemStack createBedItem(Player player, int slot) {
         boolean saved = plugin.getHomeManager().hasHome(player, slot);
+        boolean showDetails = plugin.getShowDetails(player.getUniqueId());
         Material material = saved ? Material.BLUE_BED : Material.WHITE_BED;
-        String displayName = saved ? ChatColor.BLUE + "Giường " + (slot + 1) : ChatColor.WHITE + "Giường " + (slot + 1);
+        String displayName = ChatColor.BLUE + "sethome " + (slot + 1);
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             meta.setDisplayName(displayName);
             List<String> lore = new ArrayList<>();
             if (saved) {
-                lore.add(ChatColor.AQUA + "SetHome " + (slot + 1));
-                lore.add(ChatColor.GRAY + "Toạ độ: " + getCoordinateText(player, slot));
-                lore.add(ChatColor.GRAY + "Lưu: " + getFormattedDate(player, slot));
+                if (showDetails) {
+                    lore.add(ChatColor.AQUA + "sethome " + (slot + 1));
+                    lore.add(ChatColor.GRAY + "Toạ độ: " + getCoordinateText(player, slot));
+                    lore.add(ChatColor.GRAY + "Lưu: " + getFormattedDate(player, slot));
+                } else {
+                    lore.add(ChatColor.GRAY + "Đã lưu. Hover để xem chi tiết.");
+                }
                 lore.add(ChatColor.YELLOW + "Nhấp để dịch chuyển tới home này.");
             } else {
                 lore.add(ChatColor.GRAY + "Chưa lưu home.");
@@ -97,7 +121,7 @@ public class HomeGuiCommand implements CommandExecutor {
         ItemStack item = new ItemStack(Material.RED_BED);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName(ChatColor.RED + "Xóa Home " + (slot + 1));
+            meta.setDisplayName(ChatColor.RED + "Xóa sethome " + (slot + 1));
             List<String> lore = new ArrayList<>();
             lore.add(ChatColor.GRAY + "Nhấp để xóa home đã lưu.");
             meta.setLore(lore);
